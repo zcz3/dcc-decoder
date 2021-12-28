@@ -99,6 +99,17 @@ static int parse_line(char *line)
             cbor_debug(pnode);
             cbor_free(pnode);
         }
+
+        struct cbor_node *sig = node->child->child->next->next->next;
+        if(sig->type == CBOR_BA && sig->length == 64)
+        {
+            printf("Signature\n---\n");
+            char temp[100];
+            b64_encode(sig->v.string, 32, temp);
+            printf("%s\n", temp);
+            b64_encode(&(sig->v.string[32]), 32, temp);
+            printf("%s\n", temp);
+        }
     }
 
     cbor_free(node);
