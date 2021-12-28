@@ -10,13 +10,13 @@ static struct cbor_node *cbor_new()
     return node;
 }
 
-void cbor_delete(struct cbor_node *node)
+void cbor_free(struct cbor_node *node)
 {
     if(!node)
         return;
 
-    cbor_delete(node->child);
-    cbor_delete(node->next);
+    cbor_free(node->child);
+    cbor_free(node->next);
 
     if(node->type == CBOR_BA || node->type == CBOR_STRING)
         if(node->v.string)
@@ -160,7 +160,7 @@ static struct cbor_node *cbor_next(uint8_t *data, uint32_t len, uint32_t *consum
     return node;
 
 error:
-    cbor_delete(node);
+    cbor_free(node);
     return NULL;
 }
 
@@ -207,7 +207,7 @@ static struct cbor_node *cbor_next_recurse(uint8_t *data, uint32_t len, uint32_t
             if(k->type != CBOR_INT && k->type != CBOR_STRING)
             {
                 printf("Key must be integer or string\n");
-                cbor_delete(k);
+                cbor_free(k);
                 goto error;
             }
 
@@ -216,7 +216,7 @@ static struct cbor_node *cbor_next_recurse(uint8_t *data, uint32_t len, uint32_t
             if(!v)
             {
                 printf("Could not get value\n");
-                cbor_delete(k);
+                cbor_free(k);
                 goto error;
             }
 
@@ -241,7 +241,7 @@ static struct cbor_node *cbor_next_recurse(uint8_t *data, uint32_t len, uint32_t
     return node;
 
 error:
-    cbor_delete(node);
+    cbor_free(node);
     return NULL;
 
 }
@@ -254,7 +254,7 @@ struct cbor_node *cbor_walk(uint8_t *data, uint32_t len)
     if(node && c != len)
     {
         printf("Did not consume all bytes\n");
-        cbor_delete(node);
+        cbor_free(node);
     }
 
     return node;

@@ -4,6 +4,7 @@
 #include "base45.h"
 #include "comp.h"
 #include "cbor.h"
+#include "base64.h"
 
 #define MAX_CERT 1024
 #define HC_PREFIX "HC1:"
@@ -68,16 +69,39 @@ static int parse_line(char *line)
         if(header->type == CBOR_BA)
         {
             printf("CWT header\n---\n");
-            cbor_debug(cbor_walk(header->v.string, header->length));
+            struct cbor_node *hnode = cbor_walk(header->v.string, header->length);
+            cbor_debug(hnode);
+
+            if(hnode->type == CBOR_MAP)
+            {
+                for(struct cbor_node *hkey = hnode->child; hkey; hkey = hkey->next)
+                    if(hkey->type == CBOR_INT && hkey->v.integer == 4)
+                    {
+                        if(hkey->child->type == CBOR_BA && hkey->child->length < 10)
+                        {
+                            printf("kid\n---\n");
+                            char kid[20];
+                            b64_encode(hkey->child->v.string, hkey->child->length, kid);
+                            printf("%s\n", kid);
+                        }
+                        break;
+                    }
+            }
+
+            cbor_free(hnode);
         }
 
         struct cbor_node *payload = node->child->child->next->next;
         if(payload->type == CBOR_BA)
         {
             printf("Payload\n---\n");
-            cbor_debug(cbor_walk(payload->v.string, payload->length));
+            struct cbor_node *pnode = cbor_walk(payload->v.string, payload->length);
+            cbor_debug(pnode);
+            cbor_free(pnode);
         }
     }
+
+    cbor_free(node);
 
     return 0;
 }

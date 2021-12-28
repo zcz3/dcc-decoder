@@ -1,3 +1,6 @@
+#ifndef CBOR_H
+#define CBOR_H
+
 #include <stdint.h>
 
 enum cbor_type {
@@ -31,4 +34,8 @@ struct cbor_node {
 
 struct cbor_node *cbor_walk(uint8_t *data, uint32_t len);
 
+void cbor_free(struct cbor_node *node);
+
 void cbor_debug(struct cbor_node *node);
+
+#endif

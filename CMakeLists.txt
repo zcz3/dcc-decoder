@@ -10,6 +10,7 @@ add_executable(
     dccd
     src/main.c
     src/base45.c
+    src/base64.c
     src/comp.c
     src/cbor.c
 )
